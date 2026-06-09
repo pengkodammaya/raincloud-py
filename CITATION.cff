@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both it and the original raincloud method (Allen et al. 2021)."
+title: "raincloud-py: Raincloud plots for Python"
+version: 0.1.0
+date-released: 2026-06-09
+authors:
+  - family-names: "Your"
+    given-names: "Name"
+keywords:
+  - visualization
+  - matplotlib
+  - distributions
+license: MIT
+references:
+  - type: article
+    title: "Raincloud plots: a multi-platform tool for robust data visualization"
+    authors:
+      - family-names: Allen
+        given-names: Micah
+      - family-names: Poggiali
+        given-names: Davide
+      - family-names: Whitaker
+        given-names: Kirstie
+      - family-names: Marshall
+        given-names: "Tom Rhys"
+      - family-names: "van Langen"
+        given-names: Jordy
+      - family-names: Kievit
+        given-names: "Rogier A."
+    journal: "Wellcome Open Research"
+    year: 2021
+    volume: 4
+    start: 63
