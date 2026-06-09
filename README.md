@@ -121,6 +121,24 @@ raincloud(
 
 Returns the `Axes`, so you compose normally with the rest of matplotlib.
 
+## Maintained with Codex
+
+This repository uses **OpenAI Codex** in its maintainer automation. Three
+workflows under [`.github/workflows`](.github/workflows) run
+[`openai/codex-action`](https://github.com/openai/codex-action) in a read-only
+sandbox:
+
+- **PR review** (`codex-review.yml`) — every pull request gets a focused review
+  of the diff (KDE/geometry correctness, matplotlib version pitfalls, accidental
+  new dependencies, missing tests).
+- **Issue triage** (`codex-triage.yml`) — new issues are classified and routed to
+  the likely source file, with untrusted issue text isolated against prompt
+  injection.
+- **Release notes** (`codex-release.yml`) — tagging `v*` drafts grouped,
+  user-facing release notes from the commit history and publishes the release.
+
+Repo-wide conventions Codex follows live in [`AGENTS.md`](AGENTS.md).
+
 ## Citation
 
 If you use raincloud plots in published work, please cite the original method:

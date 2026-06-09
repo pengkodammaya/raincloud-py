@@ -1,0 +1,44 @@
+name: Codex Release Notes
+
+# On a version tag (v*), Codex drafts user-facing release notes from the commit
+# history since the previous tag and publishes a GitHub Release.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Draft release notes with Codex
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          sandbox: read-only
+          output-file: RELEASE_NOTES.md
+          prompt: |
+            Write concise, user-facing release notes for raincloud-py
+            ${{ github.ref_name }}. Determine the previous tag with
+            `git describe --tags --abbrev=0 HEAD^` (it may not exist), then read
+            `git log <prev>..HEAD --pretty=format:'%s'`. Group changes under
+            **Added**, **Changed**, and **Fixed** headings (omit empty groups).
+            Output plain markdown only — no preamble, no code fences around the
+            whole thing. If there is no previous tag, summarize the initial release.
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --notes-file RELEASE_NOTES.md

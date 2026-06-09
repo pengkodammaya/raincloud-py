@@ -1,0 +1,65 @@
+name: Codex PR Review
+
+# Codex reviews the diff of every pull request and posts a single summary
+# comment. Runs in a read-only sandbox — it can read the code and run git, but
+# cannot modify the repo. To pin a model, add `model:` / `effort:` to the step.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # Fork PRs don't receive repository secrets; skip cleanly instead of failing.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Codex review
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          sandbox: read-only
+          prompt: |
+            You are reviewing pull request #${{ github.event.pull_request.number }}
+            in ${{ github.repository }}. Run
+            `git diff origin/${{ github.event.pull_request.base.ref }}...HEAD`
+            to see the changes, and consult AGENTS.md for project conventions.
+
+            raincloud-py is a dependency-light (matplotlib + numpy only) raincloud
+            plotting library. Review ONLY the changed lines. Focus on: correctness
+            bugs, KDE/geometry math errors, matplotlib version pitfalls, accidental
+            new hard dependencies, public-API breaks, and missing test coverage.
+
+            Respond with a short summary line, then a bulleted list of findings
+            (or "No blocking issues found." if clean). Do not restate the diff.
+
+      - name: Post review comment
+        if: ${{ steps.codex.outputs.final-message != '' }}
+        uses: actions/github-script@v7
+        env:
+          REVIEW: ${{ steps.codex.outputs.final-message }}
+        with:
+          script: |
+            const body = [
+              '### 🤖 Codex review',
+              '',
+              process.env.REVIEW,
+              '',
+              '<sub>Automated by [openai/codex-action](https://github.com/openai/codex-action) in a read-only sandbox.</sub>',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
